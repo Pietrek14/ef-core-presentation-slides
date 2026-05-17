@@ -1,0 +1,14 @@
+what_is_orm:
+  title: What is object/relational mapping?
+  type: article
+  url: https://hibernate.org/orm/what-is-an-orm/
+
+django_raw_sql:
+  title: "Dokumentacja frameworka django -- Performing raw SQL queries"
+  type: reference
+  url: https://docs.djangoproject.com/en/5.1/topics/db/sql/
+
+ef6:
+  title: Entity Framework 6
+  type: reference
+  url: https://learn.microsoft.com/pl-pl/ef/ef6/
