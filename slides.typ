@@ -7,10 +7,20 @@
 
 #import "@preview/polylux:0.4.0": *
 #import "@preview/metropolis-polylux:0.1.0" as metropolis
+#import "@preview/codly:1.3.0": *
+#import "@preview/codly-languages:0.1.1": *
+
 #import metropolis: new-section, focus
 
 #set text(lang: "pl")
 #show: metropolis.setup
+#show: codly-init.with()
+
+#show emph: it => {
+  text(black, it.body, style: "italic")
+}
+
+#codly(languages: codly-languages)
 
 // Wyłącznienie wszystkich animacji w celu wysłania komuś prezentacji np. jak wykłady na PZE
 // #enable-handout-mode(true)
@@ -81,8 +91,287 @@
 
   Entity Framework, znany jako EF, to technologia typu ORM dla języka
   C\#. Encje są w niej modelowane za pomocą natywnych językowi klas.
-  Współczesną wersją Entity Framework jest EF 6 i to właśnie z niego
-  zamierzam korzystać podczas tej prezentacji @ef6.
+  Najpopularniejszą wersją Entity Framework jest EF Core @ef_core i to
+  właśnie z niej zamierzam korzystać podczas tej prezentacji.
+]
+
+#slide[
+  = Pakiety NuGet
+
+  EF Core składa się z jednego, głównego pakietu NuGet oraz szeregu modularnych
+  rozszerzeń, obsługujących popularne rozwiązania bazodanowe takie, jak:
+   - PostgreSQL
+   - SQL Server
+   - SQLite
+   - MongoDB
+   - MySQL @ef_core_database_providers
+
+  Istnieją także inne pakiety rozszerzające funkcjonalności EF Core.
+]
+
+#slide[
+  = Pakiety NuGet
+  Pakiet do pracy z bazami MySQL nie został jeszcze niestety zaktualizowany do wersji 10, więc korzystamy z nieco starszej wersji EF Core.
+
+  #figure(
+    image("media/img/02_nuget_packages.png"),
+    caption: "Pakiety NuGet do obsługi EF Core z bazą MySQL"
+  )
+]
+
+#slide[
+  = Model danych
+
+  Dane modelujemy za pomocą klas C\#. Rozpocznijmy od prostego przykładu.
+
+  ```cs
+  public class Student
+  {
+      public Guid StudentId { get; set; }
+      public string FirstName { get; set; } = null!;
+      public string LastName { get; set; } = null!;
+      public int Age { get; set; }
+  }
+  ```
+
+  Kluczowym polem jest tutaj `StudentId`. Zostanie ono automatycznie
+  rozpoznane przez EF Core jako klucz główny @ef_core_tutorial.
+]
+
+#slide[
+  = Model danych
+
+  Utworzony model musimy umieścić w tzw. kontekście danych. Jest to
+  obiekt odpowiedzialny za komunikację z bazą danych. Wygląda następująco:
+
+  ```cs
+  public class SchoolContext : DbContext
+  {
+      public DbSet<Student> Students { get; set; }
+
+      protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+      {
+          String connString = "Server=localhost;Database=school;User=root;Password=;";
+          optionsBuilder.UseMySql(connString, ServerVersion.AutoDetect(connString));
+      }
+  }
+  ```
+]
+
+#slide[
+  = Migracje
+  Po utworzeniu modelu naszych danych, chcielibyśmy, aby EF Core utworzył
+  na jego podstwie bazę danych. Proces ten nazywa się migracją. Migrację
+  tworzymy za pomocą narzędzia `Add-Migration`. Narzędzie te generuje kod 
+  tworzący odpowiednie tabele, który możemy sobie przejrzeć. Zmiany 
+  zatwierdzamy poleceniem `Update-Database`.
+
+  #figure(
+    image("media/img/03_add_migration.png"),
+    caption: "Dodawanie nowej migracji"
+  )
+]
+
+#slide[
+  = Migracje
+  Po wykonaniu migracji, wygenerowana baza danych stała się widoczna w
+  phpmyadmin. Poza tabelą _students_, EF Core stworzył także tabelę
+  _\_\_efmigrationhistory_, której zadaniem jest śledzić przeprowadzone
+  na bazie migracje @ef_core_tutorial.
+
+  #figure(
+    image("media/img/04_generated_database.png"),
+    caption: "Wygenerowana baza danych"
+  )
+]
+
+#slide[
+  = Migracje
+  #figure(
+    image("media/img/05_student_table_structure.png"),
+    caption: "Struktura tabeli students"
+  )
+]
+
+#slide[
+  = Rozszerzenie modelu
+  Celem zaprezentowania rozszerzalności migracji oraz zaprezentowania
+  relacji wyposażamy model także w klasę `Class`, opisującą szkolną
+  klasę jako grupę uczniów.
+
+  ```cs
+  public class Class
+  {
+      public Guid ClassId { get; set; }
+      public string Name { get; set; } = null!;
+      public ICollection<Student> Students { get; set; } = null!;
+  }
+  ```
+]
+
+#slide[
+  = Rozszerzenie modelu
+  Należy oczywiście uzupełnić kontekst o odpowiednie pole.
+
+  ```cs
+  public class SchoolContext : DbContext
+  {
+      public DbSet<Student> Students { get; set; }
+      public DbSet<Class> Classes { get; set; }
+
+      protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+      {
+          String connString = "Server=localhost;Database=school;User=root;Password=;";
+          optionsBuilder.UseMySql(connString, ServerVersion.AutoDetect(connString));
+      }
+  }
+  ```
+]
+
+#slide[
+  = Rozszerzenie modelu
+  Poleceniem `Add-Migration` tworzy się nową migrację, odpowiedzialną
+  za rozszerzenie bazy o tabelę _classes_.
+
+  #figure(
+    image("media/img/06_classes_migration.png"),
+    caption: "Utworzenie i zatwierdzenie migracji"
+  )
+]
+
+#slide[
+  = Rozszerzenie modelu
+  W bazie danych pojawiła się tabela _classes_.
+
+  #figure(
+    image("media/img/07_classes_table_structure.png"),
+    caption: "Struktura tabeli classes"
+  )
+]
+
+#slide[
+  = Rozszerzenie modelu
+  Co jednak istotniejsze z perspektywy tego przykładu, mimo dokładnie
+  takiego samego kodu C\# w ramach klasy `Student`, zmieniona została
+  także tabela _students_. EF Core automatycznie dodał do niej nowe pole
+  `ClassId`, implementujące relację jeden-do-wielu.
+
+  #figure(
+    image("media/img/08_student_table_structure_with_class_id.png"),
+    caption: "Struktura tabeli students po wprowadzeniu relacji"
+  )
+]
+
+#slide[
+  = Populowanie bazy
+  Aby dodać dane do bazy z poziomu kodu C\#, najpierw należy instancjonować
+  klasę `SchoolContext`. Stanowi ona repozytorium naszych danych. Z poziomu
+  programu traktujemy ją jako zwykły obiekt. Korzystamy z metody `Add`, aby
+  dodać do niej nowe dane.
+
+  ```cs
+  using var context = new SchoolContext();
+
+  Student dawidPiotrowski = new Student() { 
+      StudentId = Guid.NewGuid(),
+      FirstName = "Dawid",
+      LastName = "Piotrowski",
+      Age = 21
+  };
+
+  Student danielSmiglo = new Student() { 
+      StudentId = Guid.NewGuid(),
+      FirstName = "Daniel",
+      LastName = "Smiglo",
+      Age = 22
+  };
+
+  context.Add(dawidPiotrowski);
+  context.Add(danielSmiglo);
+
+  context.SaveChanges();
+  ```
+]
+
+#slide[
+  = Populowanie bazy
+  W celu zaprezentowania relacji, tworzymy także obiekt typu `Class`
+
+  ```cs
+  Class exampleClass = new Class() { 
+      ClassId = Guid.NewGuid(),
+      Name = "1A",
+      Students = new List<Student>() { dawidPiotrowski, danielSmiglo }
+  };
+
+  context.Add(exampleClass);
+
+  context.SaveChanges();
+  ```
+]
+
+#slide[
+  = Populowanie bazy
+  Po uruchomieniu załączonego kodu, tabele w bazie zapełniły się
+  ustawionymi wartościami.
+
+  #figure(
+    image("media/img/09_student_table_populated.png"),
+    caption: "Spopulowana tabela students"
+  )
+
+  #figure(
+    image("media/img/10_classes_table_populated.png"),
+    caption: "Spopulowana tabela classes"
+  )
+]
+
+#slide[
+  = Wybieranie rekordów
+  Aby dostać się do danych w bazie, wykorzystujemy powszechny w C\# mechanizm
+  zapytań LINQ. Co istotne, zapytania wykonują się po stronie bazy danych,
+  a nie na lokalnie pobranych rekordach @ef_core_queries.
+
+  ```cs
+  var student = context.Students.FirstOrDefault(s => s.FirstName == "Dawid");
+
+  if(student is Student)
+  {
+      Console.WriteLine($"{student.FirstName} {student.LastName}"); // Dawid Piotrowski
+  }
+  ```
+]
+
+#slide[
+  = Edycja rekordów
+  Tak wybrany rekord jesteśmy w stanie edytować jak zwykły obiekt C\#.
+  Następnie wystarczy zapisać kontekst, aby zmiany znalazły się w bazie
+  danych.
+
+  ```cs
+  if (student is Student)
+    student.Age++;
+
+  context.SaveChanges();
+  ```
+
+  #figure(
+    image("media/img/11_edited_record.png"),
+    caption: "Edytowany rekord"
+  )
+]
+
+#slide[
+  = Usuwanie rekordów
+  Rekordy możemy oczywiście również usuwać. Dokonujemy tego za pomocą
+  metody `Remove`.
+
+  ```cs
+  if (student is Student)
+    context.Remove(student);
+
+  context.SaveChanges();
+  ```
 ]
 
 #slide[

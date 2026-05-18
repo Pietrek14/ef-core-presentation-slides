@@ -8,7 +8,22 @@ django_raw_sql:
   type: reference
   url: https://docs.djangoproject.com/en/5.1/topics/db/sql/
 
-ef6:
-  title: Entity Framework 6
+ef_core:
+  title: Entity Framework Core
   type: reference
-  url: https://learn.microsoft.com/pl-pl/ef/ef6/
+  url: https://learn.microsoft.com/en-us/ef/core/
+
+ef_core_tutorial:
+  title: "Entity Framework Core for Beginners"
+  type: video
+  url: https://www.youtube.com/playlist?list=PLdo4fOcmZ0oX7uTkjYwvCJDG2qhcSzwZ6
+
+ef_core_database_providers:
+  title: Database Providers - EF Core
+  type: reference
+  url: https://learn.microsoft.com/en-us/ef/core/providers/?tabs=dotnet-core-cli
+
+ef_core_queries:
+  title: Querying Data
+  type: article
+  url: https://learn.microsoft.com/en-us/ef/core/querying/
