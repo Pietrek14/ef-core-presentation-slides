@@ -9,6 +9,7 @@
 #import "@preview/metropolis-polylux:0.1.0" as metropolis
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
+#import "@preview/lilaq:0.6.0" as lq
 
 #import metropolis: new-section, focus
 
@@ -372,6 +373,94 @@
 
   context.SaveChanges();
   ```
+]
+
+#new-section[Zalety i wady rozwiązań ORM]
+
+#slide[
+  = Zalety korzystania z ORM
+
+  #item-by-item[
+    - Upraszają kod, co pozytywnie wpływa na produktywność
+    - Zwiększają bezpieczeństwo, zapobiegając np. SQL Injection
+    - Ułatwiają migracje między różnymi bazami danych
+    - Oferują większą czytelność kodu, ułatwiając jego utrzymywanie @pros_and_cons_of_orm
+    - Lepiej wpasowują się w obiektową architekturę aplikacji
+  ]
+]
+
+#slide[
+  = Wady korzystania z ORM
+
+  #item-by-item[
+    - Zdarza im się produkować nieoptymalne zapytania
+    - Wypełnianie obiektów danymi z bazy (hydration) często tworzy bottleneck'i @orms_are_overrated
+    - Wysoki poziom abstrakcji utrudnia debugowanie
+    - Czyste zapytania SQL oferują większy poziom kontroli nad zapytaniem @pros_and_cons_of_orm
+  ]
+]
+
+#new-section[Podsumowanie]
+
+#slide[
+  = Wnioski
+  Technologie ORM to popularne, pełnowymiarowe rozwiązania, stanowiące
+  rzeczywistą alternatywę dla tradycyjnych zapytań SQL. Decydując się
+  na zastosowanie ich w projekcie informatycznym, należy rozważyć
+  zarówno ich mocne strony, jak i niedociągnięcia. Nawet, jeśli preferuje
+  się pisanie czystego kodu SQL, warto mieć podstawową wiedzę na temat ORM'ów
+  jako branżowego standardu dla aplikacji bazodanowych.
+]
+
+#slide[
+  = Wnioski
+  Aby udowodnić popularności ORM'ów, zaprezentowano dane dotyczące liczby
+  wyszukań frazy "ORM" w wyszukiwarce Google @orm_trends.
+
+  #let parse-date(str) = {
+    let parts = str.trim().split("-")
+    let y = int(parts.at(0))
+    let m = int(parts.at(1))
+    let d = int(parts.at(2))
+    
+    y + ((m - 1) * 30.5 + d) / 365.25
+  }
+
+  #let convs = (
+    Week: parse-date,
+    rest: float,
+  )
+
+  #let data = lq.load-txt(
+    read("media/multiTimeline.csv"),
+    header: true,
+    converters: convs
+  )
+
+  #lq.diagram(
+    title: [Tygodniowe wyszukiwania frazy "ORM" przez ostatnie 5 lat],
+    ylabel: [Liczba wyszukań],
+    
+    width: 90%,
+    height: 80%,
+    margin: ( x: 0%, y: 5% ),
+    ylim: ( 0, auto ),
+    xaxis: (
+      format-ticks: (ticks, ..) => ticks.map(t => str(calc.round(t))),
+      tick-distance: 1.0
+    ),
+
+    lq.plot(data.Week, data.popularity)
+  )
+]
+
+#slide[
+  = Dziękuję za uwagę!
+
+  #figure(
+    image("media/img/12_me.jpg"),
+    caption: "Ja dziękujący za uwagę"
+  )
 ]
 
 #slide[

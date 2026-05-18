@@ -27,3 +27,19 @@ ef_core_queries:
   title: Querying Data
   type: article
   url: https://learn.microsoft.com/en-us/ef/core/querying/
+
+pros_and_cons_of_orm:
+  title: Pros and Cons Of ORM
+  type: article
+  url: https://medium.com/@turingvang/pros-and-cons-of-orm-07c13cfaa928
+
+orms_are_overrated:
+  title: ORMs are overrated. When to use them, and when to lose them.
+  type: article
+  author: Kovalchuk, Kirill
+  url: https://coffeeaddict.dev/orm/
+
+orm_trends:
+  title: Google Trends
+  type: web
+  url: https://trends.google.com/trends/explore?date=today%205-y&q=orm&hl=en-US
